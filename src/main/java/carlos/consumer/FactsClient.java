@@ -23,7 +23,7 @@ public class FactsClient implements RestClient {
 
 	private final int THREAD_POOL_SIZE = 8;
 	private final int MESSAGES_TO_PULL_SIZE = 1000;
-	private final String FACTS_URL = "https://uselessfacts.jsph.pl/random.json?language=en";
+	private final String FACTS_URL = "https://uselessfacts.jsph.pl/random.json";
 	private Map<String, Fact> facts = new HashMap<>();
 	private AtomicBoolean initialized = new AtomicBoolean(false);
 

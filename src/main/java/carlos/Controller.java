@@ -3,6 +3,7 @@ package carlos;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import carlos.consumer.Fact;
 import carlos.consumer.RestClient;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 public class Controller {
@@ -24,6 +26,9 @@ public class Controller {
 	@Autowired
 	RestClient restClient;
 
+	@Autowired
+	DataService dataService;
+	
 	@RequestMapping(value = "/status", method = RequestMethod.GET)
 	public StatusDTO status() {
 		Map<String, Fact> facts = restClient.getFacts();
@@ -47,13 +52,22 @@ public class Controller {
 	}
 
 	@RequestMapping(value = "/facts/{factId}", method = RequestMethod.GET)
-	public FactDTO factsId(@PathVariable("factId") String factId) {
+	public FactDTO factsId(@PathVariable("factId") String factId, @RequestParam(value="lang", defaultValue="en") String language) {
+		if(!dataService.getIsocodes().containsKey(language)) {
+			return new FactDTO();
+		}
+		
 		Map<String, Fact> facts = restClient.getFacts();
 		if (facts == null) {
 			return new FactDTO();
 		}
 
-		return facts.entrySet().stream().filter(fact -> fact.getKey().equals(factId))
-				.map(fact -> fact.getValue().asDTO()).findFirst().get();
+		Optional<FactDTO> factDTO =  facts.entrySet().stream()
+				.filter(fact -> fact.getKey().equals(factId) && fact.getValue().getLanguage().equals(language))
+				.map(fact -> fact.getValue().asDTO()).findFirst();
+		
+		if(factDTO.isPresent()) return factDTO.get();
+		return new FactDTO();
+		
 	}
 }
